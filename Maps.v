@@ -135,6 +135,9 @@ Definition total_map (A:Type) := id -> A.
 
 Definition t_empty {A:Type} (v : A) : total_map A :=
   (fun _ => v).
+  
+Definition init_nat_env :=
+  t_empty 0.
 
 (** More interesting is the [update] function, which (as before) takes
     a map [m], a key [x], and a value [v] and returns a new map that
@@ -151,6 +154,9 @@ Definition t_update {A:Type} (m : total_map A)
     For example, we can build a map taking [id]s to [bool]s, where [Id
     "foo"] is mapped to [true] and every other key is mapped to [false],
     like this: *)
+    
+Definition new_env := t_update init_nat_env (Id "z") 1.
+Compute new_env (Id "x").
 
 Definition examplemap :=
   t_update (t_update (t_empty false) (Id "foo") false)
@@ -186,7 +192,8 @@ Proof. reflexivity. Qed.
 
 Lemma t_apply_empty:  forall A x v, @t_empty A v x = v.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (t_update_eq)  *)
@@ -197,7 +204,9 @@ Proof.
 Lemma t_update_eq : forall A (m: total_map A) x v,
   (t_update m x v) x = v.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros.
+  unfold t_update. rewrite<-beq_id_refl. reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (t_update_neq)  *)
@@ -210,7 +219,11 @@ Theorem t_update_neq : forall (X:Type) v x1 x2
   x1 <> x2 ->
   (t_update m x1 v) x2 = m x2.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros.
+  unfold t_update.
+  apply beq_id_false_iff in H.
+  rewrite H. reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (t_update_shadow)  *)
@@ -224,7 +237,13 @@ Lemma t_update_shadow : forall A (m: total_map A) v1 v2 x,
     t_update (t_update m x v1) x v2
   = t_update m x v2.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros.
+  apply functional_extensionality.
+  intros. unfold t_update.
+  destruct (beq_id x x0).
+  - reflexivity.
+  - reflexivity.
+Qed.
 (** [] *)
 
 (** For the final two lemmas about total maps, it's convenient to use
@@ -238,7 +257,11 @@ Proof.
 
 Lemma beq_idP : forall x y, reflect (x = y) (beq_id x y).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros.
+  destruct (beq_id x y) eqn:H.
+  - apply beq_id_true_iff in H. apply ReflectT. apply H.
+  - apply beq_id_false_iff in H. apply ReflectF. apply H.
+Qed.
 (** [] *)
 
 (** Now, given [id]s [x1] and [x2], we can use the [destruct (beq_idP
@@ -255,7 +278,14 @@ Proof.
 Theorem t_update_same : forall X x (m : total_map X),
   t_update m x (m x) = m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros.
+  apply functional_extensionality.
+  unfold t_update.
+  intros.
+  destruct (beq_idP x x0).
+  - rewrite e. reflexivity.
+  - reflexivity.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, recommended (t_update_permute)  *)
@@ -263,13 +293,37 @@ Proof.
     function: If we update a map [m] at two distinct keys, it doesn't
     matter in which order we do the updates. *)
 
+Lemma beq_id_assoc: forall x y, beq_id x y = beq_id y x.
+Proof.
+  intros.
+  unfold beq_id.
+  destruct x.
+  destruct y.
+  Search string_dec.
+Abort.
 Theorem t_update_permute : forall (X:Type) v1 v2 x1 x2
                              (m : total_map X),
   x2 <> x1 ->
     (t_update (t_update m x2 v2) x1 v1)
   = (t_update (t_update m x1 v1) x2 v2).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros.
+  apply functional_extensionality.
+  intros.
+  unfold t_update.
+  destruct (beq_idP x2 x).
+  - rewrite e in H.
+    assert (x1<>x). {
+      unfold not. 
+      intros. 
+      symmetry in H0. 
+      contradiction.
+    }
+    destruct (beq_idP x1 x).
+    + contradiction.
+    + reflexivity.
+  - reflexivity.
+Qed.
 (** [] *)
 
 (* ################################################################# *)
@@ -280,6 +334,8 @@ Proof.
     of type [option A] and default element [None]. *)
 
 Definition partial_map (A:Type) := total_map (option A).
+
+Compute option.
 
 Definition empty {A:Type} : partial_map A :=
   t_empty None.

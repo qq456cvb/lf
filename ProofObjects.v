@@ -176,12 +176,24 @@ Print ev_4'''.
 
 Theorem ev_8 : ev 8.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  apply ev_SS.
+  apply ev_SS.
+  apply ev_SS.
+  apply ev_SS.
+  apply ev_0.
+Qed.
 
-Definition ev_8' : ev 8 
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition ev_8' : ev 8 :=
+  ev_SS 6 (ev_SS 4 (ev_SS 2 (ev_SS 0 ev_0))).
 (** [] *)
 
+Definition my_fun : nat -> nat.
+Proof.
+  intros n.
+  apply (S n).
+Qed.
+
+Check my_fun.
 (* ################################################################# *)
 (** * Quantifiers, Implications, Functions *)
 
@@ -326,6 +338,7 @@ Inductive and (P Q : Prop) : Prop :=
 
 End And.
 
+
 (** Notice the similarity with the definition of the [prod] type,
     given in chapter [Poly]; the only difference is that [prod] takes
     [Type] arguments, whereas [and] takes [Prop] arguments. *)
@@ -368,8 +381,21 @@ Definition and_comm' P Q : P /\ Q <-> Q /\ P :=
 (** **** Exercise: 2 stars, optional (conj_fact)  *)
 (** Construct a proof object demonstrating the following proposition. *)
 
-Definition conj_fact : forall P Q R, P /\ Q -> Q /\ R -> P /\ R 
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition select_l P Q (H : P /\ Q) : P :=
+  match H with
+  | conj HP HQ => HP
+  end.
+
+Definition select_r P Q (H : P /\ Q) : Q :=
+  match H with
+  | conj HP HQ => HQ
+  end.
+  
+Definition conj_test: forall P Q: Prop, P->Q->P /\ Q :=
+  fun P Q HP HQ => conj HP HQ. 
+
+Definition conj_fact : forall P Q R, P /\ Q -> Q /\ R -> P /\ R :=
+  fun P Q R HPQ HQR => conj (select_l P Q HPQ) (select_r Q R HQR).
 (** [] *)
 
 (** ** Disjunction
@@ -384,6 +410,7 @@ Inductive or (P Q : Prop) : Prop :=
 | or_intror : Q -> or P Q.
 
 End Or.
+Check (@or_introl (forall P Q: Prop, P->Q->P /\ Q) _ conj_test).
 
 (** This declaration explains the behavior of the [destruct] tactic on
     a disjunctive hypothesis, since the generated subgoals match the
@@ -396,8 +423,13 @@ End Or.
 (** Try to write down an explicit proof object for [or_commut] (without
     using [Print] to peek at the ones we already defined!). *)
 
-Definition or_comm : forall P Q, P \/ Q -> Q \/ P 
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition or_comm : forall P Q, P \/ Q -> Q \/ P :=
+  fun P Q PQ => match PQ with
+    | or_introl HP => or_intror HP
+    | or_intror HQ => or_introl HQ
+  end.
+
+  
 (** [] *)
 
 (** ** Existential Quantification
@@ -435,8 +467,8 @@ Definition some_nat_is_even : exists n, ev n :=
 (** **** Exercise: 2 stars, optional (ex_ev_Sn)  *)
 (** Complete the definition of the following proof object: *)
 
-Definition ex_ev_Sn : ex (fun n => ev (S n)) 
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition ex_ev_Sn : ex (fun n => ev (S n)) :=
+  ex_intro (fun n => ev (S n)) 1 (ev_SS 0 ev_0).
 (** [] *)
 
 (* ================================================================= *)
@@ -493,7 +525,10 @@ Notation "x = y" := (eq x y)
 Lemma leibniz_equality : forall (X : Type) (x y: X),
   x = y -> forall P:X->Prop, P x -> P y.
 Proof.
-(* FILL IN HERE *) Admitted.
+  intros.
+  destruct H.
+  apply H0.
+Qed.
 (** [] *)
 
 (** We can use [eq_refl] to construct evidence that, for example, [2 =

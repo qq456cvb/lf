@@ -199,15 +199,18 @@ Definition test_ceval (st:state) (c:com) :=
    [X] (inclusive: [1 + 2 + ... + X]) in the variable [Y].  Make sure
    your solution satisfies the test that follows. *)
 
-Definition pup_to_n : com
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Print state.
+Definition pup_to_n : com :=
+  Y ::= ANum 0;;
+  WHILE BNot (BEq (AId X) (ANum 0)) DO
+    Y ::= APlus (AId X) (AId Y);;
+    X ::= AMinus (AId X) (ANum 1)
+  END.
 
-(* 
 Example pup_to_n_1 :
   test_ceval (t_update empty_state X 5) pup_to_n
   = Some (0, 15, 0).
 Proof. reflexivity. Qed.
-*)
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (peven)  *)
@@ -215,8 +218,26 @@ Proof. reflexivity. Qed.
     sets [Z] to [1] otherwise.  Use [ceval_test] to test your
     program. *)
 
-(* FILL IN HERE *)
+Definition peven : com :=
+  WHILE BNot (BLe (AId X) (ANum 1)) DO
+    X ::= AMinus (AId X) (ANum 2)
+  END;;
+  IFB BEq (AId X) (ANum 0) THEN
+    Z ::= (ANum 0)
+  ELSE
+    Z ::= (ANum 1)
+  FI.
 (** [] *)
+
+Example peven_1 :
+  test_ceval (t_update empty_state X 5) peven
+  = Some (1, 0, 1).
+Proof. reflexivity. Qed.
+
+Example peven_2 :
+  test_ceval (t_update empty_state X 16) peven
+  = Some (0, 0, 0).
+Proof. reflexivity. Qed.
 
 (* ################################################################# *)
 (** * Relational vs. Step-Indexed Evaluation *)
@@ -345,8 +366,37 @@ Theorem ceval__ceval_step: forall c st st',
       exists i, ceval_step st c i = Some st'.
 Proof.
   intros c st st' Hce.
-  induction Hce.
-  (* FILL IN HERE *) Admitted.
+  induction Hce; try (exists 1; reflexivity).
+  - exists 1. simpl. rewrite H. reflexivity.
+  - destruct IHHce1 as [a]. destruct IHHce2 as [b].
+    exists (a + b + 1).
+    assert (ceval_step st c1 (a + b) = Some st').
+    apply ceval_step_more with (i1:=a). apply le_plus_l. assumption.
+    assert (ceval_step st' c2 (a + b) = Some st'').
+    apply ceval_step_more with (i1:=b). apply le_plus_r. assumption.
+    destruct (a + b + 1) eqn:Heq.
+    rewrite plus_comm in Heq. inversion Heq.
+    simpl.  rewrite plus_comm in Heq. inversion Heq.
+    rewrite H1. rewrite H2. reflexivity.
+  - destruct IHHce as [a]. exists (S a).
+    destruct a.
+    inversion H0.
+    remember (S a) as n.
+    simpl. rewrite H. assumption.
+  - destruct IHHce as [a]. exists (S a).
+    destruct a.
+    inversion H0.
+    remember (S a) as n.
+    simpl. rewrite H. assumption.
+  - exists 1. simpl. rewrite H. reflexivity.
+  - destruct IHHce1 as [m]. destruct IHHce2 as [n].
+    exists (S (m + n)). simpl. rewrite H.
+    assert (ceval_step st c (m + n) = Some st').
+    apply ceval_step_more with (i1:=m). apply le_plus_l. assumption.
+    assert (ceval_step st' (WHILE b DO c END) (m + n) = Some st'').
+    apply ceval_step_more with (i1:=n). apply le_plus_r. assumption.
+    rewrite H2. assumption.
+Qed.
 (** [] *)
 
 Theorem ceval_and_ceval_step_coincide: forall c st st',

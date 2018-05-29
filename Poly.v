@@ -1228,7 +1228,6 @@ Example plus_3 :
 Proof. reflexivity. Qed.
 
 (** Multiplication: *)
-
 Definition mult (n m : nat) : nat :=
   fun (X : Type) (f : X -> X) (x : X) => m X (n X f) x.
 
@@ -1262,6 +1261,21 @@ Proof. reflexivity. Qed.
 
 Example exp_4 : exp three three = mult three (mult three three).
 Proof. reflexivity. Qed.
+
+Theorem plus_zero: forall n: nat, plus n zero = n.
+Proof.
+  intros. unfold plus. unfold zero. reflexivity.
+Qed.
+
+Theorem mult_twice: forall n: nat, mult n two = plus n n.
+Proof.
+  intros. unfold two. unfold mult. reflexivity.
+Qed.
+
+Theorem exp_twice: forall n : nat, exp n two = mult n n.
+Proof.
+  intros. unfold mult. unfold two. unfold exp. reflexivity. 
+Qed.
 
 End Church.
 (** [] *)
