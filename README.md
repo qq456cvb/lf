@@ -1,37 +1,21 @@
-# lf
+# Logical Foundations Solutions
 
-<!-- README refined by Cursor -->
+My worked solutions to **_Logical Foundations_** — volume 1 of the [Software Foundations](https://softwarefoundations.cis.upenn.edu/) series — covering functional programming in Coq, inductive proofs, constructive logic, and the formalization of a small imperative language (Imp).
 
-Small light-field or learning-feature experiment.
+## Contents
 
-## Overview
-
-This repository contains source files code from an older research, course, or prototype project. The README has been refreshed to make the repository easier to scan while preserving the original notes below.
-
-## Repository Contents
-
-- Top-level source files and project assets.
-
-## Setup
-
-- This legacy repo does not pin a full environment. Start from the language/toolchain implied by the source files, then install missing packages as reported by the runtime.
+The repo is the book's chapter scripts with the exercises filled in, spanning the full core sequence — `Basics`, `Induction`, `Lists`, `Poly`, `Tactics`, `Logic`, `IndProp`, `Maps`, `ProofObjects`, `IndPrinciples`, `Rel` — plus the Imp track (`Imp`, `ImpCEvalFun`, `ImpParser`, `Extraction`, `Auto`). Exercises are complete; the only remaining `Admitted.` is the book's own `ev_even_firsttry` expository placeholder in `IndProp.v`.
 
 ## Usage
 
-- inspect the source directories listed below; many of these older repos were kept as research prototypes rather than packaged applications.
+Open the `.v` files in CoqIDE, Proof General, or VsCoq and step through them. Chapters `Require` earlier ones, so compile in dependency order first, e.g.:
 
-## Data and Artifacts
+```bash
+coqc Basics.v Induction.v Lists.v Poly.v Tactics.v Logic.v IndProp.v Maps.v ...
+```
 
-No new large artifact is stored in this repository. If a dataset or checkpoint is required, follow the links and notes in the original section below.
+This is a circa-2018 edition of the book (it still uses `beq_nat`-era naming, before the `eqb` rename), so a contemporary Coq release (8.7–8.8) is the safest bet for replaying the proofs.
 
-## Status
+## Note
 
-This is a `Batch C` cleanup pass for a legacy repository. Commands may require dependency/version adjustments on a modern machine.
-
-## License
-
-No explicit license file was found in this checkout; check the original project context before reusing code.
-
-## Original Notes
-
-# Logic Foundation Solutions
+If you are taking a course that uses Software Foundations, do the exercises yourself before reading solutions.
